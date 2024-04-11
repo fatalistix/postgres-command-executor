@@ -1,0 +1,12 @@
+services:
+
+  db:
+    image: 'postgres:16.2'
+    container_name: postgres-command-executor-db
+    restart: always
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: command-executor
+      POSTGRES_USER: command-executor-owner
+      POSTGRES_PASSWORD: command-executor-owner
