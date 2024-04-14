@@ -1,21 +1,60 @@
-MAKEFLAGS += --silent
+# makefile silent mode
+#MAKEFLAGS += --silent
 
-EXECUTABLE=postgres-command-executor
-EXECUTABLE_DIR=bin
-SOURCE=cmd/$(EXECUTABLE)/main.go
+# project setup
+BINARY_NAME=postgres-command-executor
+MAIN_PACKAGE_PATH=./cmd/postgres-command-executor/main.go
 
-all: $(EXECUTABLE)
+# Go environment variables
+# 0 or 1
+CGO_ENABLED=0
+GOOS=linux
 
+# ==================================================================================== #
+# HELPERS
+# ==================================================================================== #
 
-$(EXECUTABLE): create-executable-dir-if-not-exists
-	echo "Building Golang project..."
-	go build -o $(EXECUTABLE_DIR)/$(EXECUTABLE) $(SOURCE)
-	echo "Golang project was build successfully Executable file is located in '$(EXECUTABLE_DIR)/$(EXECUTABLE)'"
+## help: print this help message
+.PHONY: help
+help:
+	@echo 'Usage:'
+	@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' | sed -e 's/^/ /'
 
+.PHONY: confirm
+confirm:
+	@echo -n 'Are you sure? [y/N] ' && read ans && [ $${ans:-N} = y ]
 
-create-executable-dir-if-not-exists:
-ifeq (, $(wildcard $(EXECUTABLE_DIR)))
-	echo "Creating '$(EXECUTABLE_DIR)' directory..."
-	mkdir $(EXECUTABLE_DIR)
-	echo "'$(EXECUTABLE_DIR)' directory created successfully"
-endif
+# ==================================================================================== #
+# QUALITY CONTROL
+# ==================================================================================== #
+
+## tidy: format code and tidy modfile
+.PHONY: tidy
+tidy:
+	go fmt ./...
+	go mod tidy -v
+
+# ==================================================================================== #
+# DEVELOPMENT
+# ==================================================================================== #
+
+## test: run all tests
+.PHONY: test
+test:
+	go test -v -race -buildvcs ./...
+
+## test/cover: run all tests and display coverage
+.PHONY: test/cover
+test/cover:
+	go test -v -race -buildvcs -coverprofile=/tmp/coverage.out ./...
+	go tool cover -html=/tmp/coverage.out
+
+## build: build the application
+.PHONY: run
+build:
+	CGO_ENABLED=${CGO_ENABLED} go build -o ${BINARY_DIR}/${BINARY_NAME} ${MAIN_PACKAGE_PATH}
+
+## run: run the application
+.PHONY: run
+run: build
+	/tmp/bin/${BINARY_NAME}
