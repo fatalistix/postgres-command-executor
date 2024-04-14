@@ -1,20 +1,19 @@
-package postgres
+package repositories
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
-	"github.com/lib/pq"
+	"github.com/fatalistix/postgres-command-executor/internal/database/postgres"
 )
 
 type CommandRepository struct {
 	db *sql.DB
 }
 
-func NewCommandRepository(database *Database) (*CommandRepository, error) {
+func NewCommandRepository(database *postgres.Database) (*CommandRepository, error) {
 	const op = "database.postgres.NewCommandRepository"
 
-	commandRepository := CommandRepository{db: database.db}
+	commandRepository := CommandRepository{db: database.DB()}
 	_, err := commandRepository.db.Exec(`
 		CREATE TABLE IF NOT EXISTS command (
 		    id SERIAL UNIQUE NOT NULL,
@@ -36,22 +35,16 @@ func NewCommandRepository(database *Database) (*CommandRepository, error) {
 	return &commandRepository, nil
 }
 
-func (cr *CommandRepository) SaveCommand(command string) error {
+func (cr *CommandRepository) SaveCommand(command string) (int64, error) {
 	const op = "database.postgres.SaveCommand"
 
-	stmt, err := cr.db.Prepare(`
-		INSERT INTO command(command) values(?);
-	`)
+	var id int64
+	err := cr.db.QueryRow(`
+		INSERT INTO command(command) VALUES ($1) RETURNING id;
+	`, command).Scan(&id)
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 
-	_, err = stmt.Exec(stmt, command)
-	if err != nil {
-		var pqErr *pq.Error
-		errors.As(err, &pqErr)
-		fmt.Println(pqErr.Code.Name())
-	}
-
-	return nil
+	return id, nil
 }
