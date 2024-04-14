@@ -1,46 +1,74 @@
 package app
 
 import (
+	"context"
 	"fmt"
+	"github.com/fatalistix/postgres-command-executor/internal/config"
 	"github.com/fatalistix/postgres-command-executor/internal/database/postgres"
+	"github.com/fatalistix/postgres-command-executor/internal/database/postgres/repositories"
+	"github.com/fatalistix/postgres-command-executor/internal/http-server/handlers/command/save"
 	"log/slog"
-	"os"
-	"strconv"
-	"time"
+	"net/http"
 )
 
 type App struct {
+	srv      *http.Server
+	database *postgres.Database
 }
 
-func NewApp(log *slog.Logger, port int, timeout, idleTimeout time.Duration) (*App, error) {
+func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 	const op = "app.NewApp"
 
-	postgresHost := os.Getenv("POSTGRES_HOST")
-	postgresUser := os.Getenv("POSTGRES_USER")
-	postgresPassword := os.Getenv("POSTGRES_PASSWORD")
-	postgresDbname := os.Getenv("POSTGRES_DBNAME")
-	postgresSSLMode := os.Getenv("POSTGRES_SSLMODE")
-
-	var postgresPort uint16
-	temp, err := strconv.ParseUint(os.Getenv("POSTGRES_PORT"), 10, 16)
-	if err != nil {
-		return nil, fmt.Errorf("%s: error parsing port from environment variable: %w", op, err)
-	}
-	postgresPort = uint16(temp)
-
 	database, err := postgres.NewDatabase(
-		postgresHost,
-		postgresPort,
-		postgresUser,
-		postgresPassword,
-		postgresDbname,
-		postgresSSLMode,
+		cfg.Postgres.Host,
+		cfg.Postgres.Port,
+		cfg.Postgres.User,
+		cfg.Postgres.Password,
+		cfg.Postgres.DBName,
+		cfg.Postgres.SSLMode,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	_ = database
+	commandRepository, err := repositories.NewCommandRepository(database)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
 
-	return &App{}, nil
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /command", save.NewSaveHandlerFunc(log, commandRepository))
+
+	srv := http.Server{
+		Addr:         cfg.HTTPServer.Address,
+		Handler:      mux,
+		ReadTimeout:  cfg.HTTPServer.Timeout,
+		WriteTimeout: cfg.HTTPServer.Timeout,
+		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
+	}
+
+	return &App{srv: &srv, database: database}, nil
+}
+func (a *App) Run() error {
+	const op = "app.Run"
+
+	if err := a.srv.ListenAndServe(); err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+}
+
+func (a *App) Stop(ctx context.Context) error {
+	const op = "app.Stop"
+
+	defer func() {
+		_ = a.database.DB().Close()
+	}()
+
+	if err := a.srv.Shutdown(ctx); err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
 }
