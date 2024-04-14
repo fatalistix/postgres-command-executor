@@ -1,13 +1,13 @@
 {
   "http_server": {
-    "address": "localhost:8089",
+    "address": ":8089",
     "timeout": 4000000000,
     "idle_timeout": 30000000000,
     "shutdown_timeout": 100000000000
   },
   "postgres": {
-    "host": "localhost",
-    "port": 5434,
+    "host": "db",
+    "port": 5432,
     "user": "command-executor-owner",
     "password": "command-executor-owner",
     "dbname": "command-executor",
