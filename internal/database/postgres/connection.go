@@ -31,3 +31,7 @@ func NewDatabase(host string, port uint16, user string, password string, dbname 
 
 	return &Database{db: db}, nil
 }
+
+func (d *Database) DB() *sql.DB {
+	return d.db
+}
