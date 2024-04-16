@@ -3,7 +3,7 @@ package save
 import (
 	"encoding/json"
 	"github.com/fatalistix/postgres-command-executor/internal/lib/http-server/request/header"
-	"github.com/fatalistix/postgres-command-executor/internal/lib/log/slog/attr"
+	slogattr "github.com/fatalistix/postgres-command-executor/internal/lib/log/slog/attr"
 	"log/slog"
 	"net/http"
 )
@@ -41,7 +41,7 @@ func NewSaveHandlerFunc(log *slog.Logger, saver CommandSaver) http.HandlerFunc {
 		decoder := json.NewDecoder(r.Body)
 		decoder.DisallowUnknownFields()
 		if err := decoder.Decode(&request); err != nil {
-			log.Error("unable to decode request's body", attr.Err(err))
+			log.Error("unable to decode request's body", slogattr.Err(err))
 
 			http.Error(w, "unable to decode request's body", http.StatusBadRequest)
 
@@ -50,7 +50,7 @@ func NewSaveHandlerFunc(log *slog.Logger, saver CommandSaver) http.HandlerFunc {
 
 		id, err := saver.SaveCommand(request.Command)
 		if err != nil {
-			log.Error("error saving command", attr.Err(err))
+			log.Error("error saving command", slogattr.Err(err))
 
 			http.Error(w, "error saving command: "+err.Error(), http.StatusConflict)
 
@@ -60,7 +60,7 @@ func NewSaveHandlerFunc(log *slog.Logger, saver CommandSaver) http.HandlerFunc {
 		response := Response{ID: id}
 		encoder := json.NewEncoder(w)
 		if err := encoder.Encode(response); err != nil {
-			log.Error("error encoding response", attr.Err(err))
+			log.Error("error encoding response", slogattr.Err(err))
 
 			http.Error(w, "error encoding response", http.StatusInternalServerError)
 
