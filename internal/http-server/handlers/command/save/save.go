@@ -48,6 +48,8 @@ func NewSaveHandlerFunc(log *slog.Logger, saver CommandSaver) http.HandlerFunc {
 			return
 		}
 
+		log.Info("request body decoded")
+
 		id, err := saver.SaveCommand(request.Command)
 		if err != nil {
 			log.Error("error saving command", slogattr.Err(err))
@@ -56,6 +58,8 @@ func NewSaveHandlerFunc(log *slog.Logger, saver CommandSaver) http.HandlerFunc {
 
 			return
 		}
+
+		log.Info("new command saved")
 
 		response := Response{ID: id}
 		encoder := json.NewEncoder(w)
@@ -66,5 +70,7 @@ func NewSaveHandlerFunc(log *slog.Logger, saver CommandSaver) http.HandlerFunc {
 
 			return
 		}
+
+		log.Info("response is written")
 	}
 }
