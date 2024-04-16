@@ -52,7 +52,7 @@ func NewSaveHandlerFunc(log *slog.Logger, saver CommandSaver) http.HandlerFunc {
 		if err != nil {
 			log.Error("error saving command", slogattr.Err(err))
 
-			http.Error(w, "error saving command: "+err.Error(), http.StatusConflict)
+			http.Error(w, "error saving command: "+err.Error(), http.StatusBadRequest)
 
 			return
 		}
