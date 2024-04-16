@@ -37,7 +37,7 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("POST /command", save.NewSaveHandlerFunc(log, commandRepository))
+	mux.HandleFunc("POST /commands", save.NewSaveHandlerFunc(log, commandRepository))
 
 	srv := http.Server{
 		Addr:         cfg.HTTPServer.Address,
