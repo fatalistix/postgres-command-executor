@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/fatalistix/postgres-command-executor/internal/app"
 	"github.com/fatalistix/postgres-command-executor/internal/config"
+	"github.com/fatalistix/postgres-command-executor/internal/env"
 	slogattr "github.com/fatalistix/postgres-command-executor/internal/lib/log/slog/attr"
-	"github.com/joho/godotenv"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -15,11 +15,7 @@ import (
 func main() {
 	log := setupLogger()
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Error("failed to load environment variables", slogattr.Err(err))
-		os.Exit(1)
-	}
+	env.MustLoadEnv()
 
 	pathToConfig := os.Getenv("CONFIG_PATH")
 
