@@ -1,9 +1,10 @@
-package repositories
+package command
 
 import (
 	"database/sql"
 	"fmt"
 	"github.com/fatalistix/postgres-command-executor/internal/database/postgres"
+	"github.com/fatalistix/postgres-command-executor/internal/domain/models"
 )
 
 type CommandRepository struct {
@@ -36,7 +37,7 @@ func NewCommandRepository(database *postgres.Database) (*CommandRepository, erro
 }
 
 func (cr *CommandRepository) SaveCommand(command string) (int64, error) {
-	const op = "database.postgres.SaveCommand"
+	const op = "database.postgres.repositories.SaveCommand"
 
 	var id int64
 	err := cr.db.QueryRow(`
@@ -47,4 +48,64 @@ func (cr *CommandRepository) SaveCommand(command string) (int64, error) {
 	}
 
 	return id, nil
+}
+
+func (cr *CommandRepository) DeleteCommand(id int64) error {
+	const op = "database.postgres.repositories.DeleteCommand"
+
+	_, err := cr.db.Exec(`
+		DELETE FROM command WHERE id = $1;
+	`, id)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+}
+
+func (cr *CommandRepository) GetCommands() ([]models.Command, error) {
+	const op = "database.postgres.repositories.GetCommands"
+
+	rows, err := cr.db.Query(`
+		SELECT id, command FROM command;
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	defer func() {
+		_ = rows.Close()
+	}()
+
+	commands := make([]models.Command, 0)
+
+	for rows.Next() {
+		var command models.Command
+		if err := rows.Scan(&command.ID, &command.Command); err != nil {
+			return nil, fmt.Errorf("%s: %w", op, err)
+		}
+
+		commands = append(commands, command)
+	}
+
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("%s: %w", op, rows.Err())
+	}
+
+	return commands, nil
+}
+
+func (cr *CommandRepository) GetCommand(id int64) (models.Command, error) {
+	const op = "database.postgres.repositories.GetCommand"
+
+	var command models.Command
+
+	err := cr.db.QueryRow(`
+		SELECT id, command FROM command WHERE id = $1
+	`, id).Scan(&command.ID, &command.Command)
+	if err != nil {
+		return models.Command{}, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return command, nil
 }

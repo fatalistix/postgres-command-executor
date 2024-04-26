@@ -15,18 +15,15 @@ import (
 func main() {
 	log := setupLogger()
 
-	//{
-	//	out, err := exec.Command("/bin/bash", "-c", "ls").Output()
-	//	fmt.Println(string(out), err, "\n", "<===")
-	//}
-
 	err := godotenv.Load()
 	if err != nil {
 		log.Error("failed to load environment variables", slogattr.Err(err))
 		os.Exit(1)
 	}
 
-	cfg := config.MustLoadConfig()
+	pathToConfig := os.Getenv("CONFIG_PATH")
+
+	cfg := config.MustLoadConfig(pathToConfig)
 
 	application, err := app.NewApp(log, cfg)
 	if err != nil {
