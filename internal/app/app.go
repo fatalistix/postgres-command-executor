@@ -6,7 +6,10 @@ import (
 	"github.com/fatalistix/postgres-command-executor/internal/config"
 	"github.com/fatalistix/postgres-command-executor/internal/database/postgres"
 	"github.com/fatalistix/postgres-command-executor/internal/database/postgres/repositories"
-	"github.com/fatalistix/postgres-command-executor/internal/http-server/handlers/command/save"
+	commanddelete "github.com/fatalistix/postgres-command-executor/internal/http-server/handlers/command/delete"
+	commandget "github.com/fatalistix/postgres-command-executor/internal/http-server/handlers/command/get"
+	commandlist "github.com/fatalistix/postgres-command-executor/internal/http-server/handlers/command/list"
+	commandsave "github.com/fatalistix/postgres-command-executor/internal/http-server/handlers/command/save"
 	"log/slog"
 	"net/http"
 )
@@ -37,7 +40,10 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("POST /commands", save.NewSaveHandlerFunc(log, commandRepository))
+	mux.HandleFunc("POST /commands", commandsave.NewSaveHandlerFunc(log, commandRepository))
+	mux.HandleFunc("DELETE /command/{id}", commanddelete.NewDeleteHandlerFunc(log, commandRepository))
+	mux.HandleFunc("GET /commands", commandlist.NewListHandlerFunc(log, commandRepository))
+	mux.HandleFunc("GET /command/{id}", commandget.NewGetHandlerFunc(log, commandRepository))
 
 	srv := http.Server{
 		Addr:         cfg.HTTPServer.Address,
