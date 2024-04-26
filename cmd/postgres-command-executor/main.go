@@ -17,9 +17,9 @@ func main() {
 
 	env.MustLoadEnv()
 
-	pathToConfig := os.Getenv("CONFIG_PATH")
+	configPath := os.Getenv("CONFIG_PATH")
 
-	cfg := config.MustLoadConfig(pathToConfig)
+	cfg := config.MustLoadConfig(configPath)
 
 	application, err := app.NewApp(log, cfg)
 	if err != nil {
