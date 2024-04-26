@@ -27,15 +27,19 @@ type Postgres struct {
 	SSLMode  string `json:"sslmode"`
 }
 
-func MustLoadConfig(pathToConfig string) Config {
-	data, err := os.ReadFile(pathToConfig)
+func MustLoadConfig(configPath string) Config {
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		panic("config file does not exists: " + configPath)
+	}
+
+	data, err := os.ReadFile(configPath)
 	if err != nil {
-		panic("config file not found: " + pathToConfig)
+		panic("cannot read config file: " + err.Error())
 	}
 
 	var config Config
 	if err = json.Unmarshal(data, &config); err != nil {
-		panic("cannot read config: " + err.Error())
+		panic("cannot unmarshal config to json: " + err.Error())
 	}
 
 	return config
