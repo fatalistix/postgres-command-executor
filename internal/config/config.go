@@ -27,9 +27,7 @@ type Postgres struct {
 	SSLMode  string `json:"sslmode"`
 }
 
-func MustLoadConfig() Config {
-	pathToConfig := os.Getenv("CONFIG_PATH")
-
+func MustLoadConfig(pathToConfig string) Config {
 	data, err := os.ReadFile(pathToConfig)
 	if err != nil {
 		panic("config file not found: " + pathToConfig)
