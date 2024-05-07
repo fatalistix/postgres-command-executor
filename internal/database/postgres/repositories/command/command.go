@@ -37,7 +37,7 @@ func NewRepository(database *postgres.Database) (*Repository, error) {
 }
 
 func (cr *Repository) SaveCommand(command string) (int64, error) {
-	const op = "database.postgres.repository.SaveCommand"
+	const op = "database.postgres.repositories.SaveCommand"
 
 	var id int64
 	err := cr.db.QueryRow(`
@@ -51,7 +51,7 @@ func (cr *Repository) SaveCommand(command string) (int64, error) {
 }
 
 func (cr *Repository) DeleteCommand(id int64) error {
-	const op = "database.postgres.repository.DeleteCommand"
+	const op = "database.postgres.repositories.DeleteCommand"
 
 	_, err := cr.db.Exec(`
 		DELETE FROM command WHERE id = $1;
@@ -64,7 +64,7 @@ func (cr *Repository) DeleteCommand(id int64) error {
 }
 
 func (cr *Repository) GetCommands() ([]models.Command, error) {
-	const op = "database.postgres.repository.GetCommands"
+	const op = "database.postgres.repositories.GetCommands"
 
 	rows, err := cr.db.Query(`
 		SELECT id, command FROM command;
@@ -96,7 +96,7 @@ func (cr *Repository) GetCommands() ([]models.Command, error) {
 }
 
 func (cr *Repository) GetCommand(id int64) (models.Command, error) {
-	const op = "database.postgres.repository.GetCommand"
+	const op = "database.postgres.repositories.GetCommand"
 
 	var command models.Command
 
