@@ -7,14 +7,14 @@ import (
 	"github.com/fatalistix/postgres-command-executor/internal/domain/models"
 )
 
-type CommandRepository struct {
+type Repository struct {
 	db *sql.DB
 }
 
-func NewCommandRepository(database *postgres.Database) (*CommandRepository, error) {
+func NewRepository(database *postgres.Database) (*Repository, error) {
 	const op = "database.postgres.NewCommandRepository"
 
-	commandRepository := CommandRepository{db: database.DB()}
+	commandRepository := Repository{db: database.DB()}
 	_, err := commandRepository.db.Exec(`
 		CREATE TABLE IF NOT EXISTS command (
 		    id SERIAL UNIQUE NOT NULL,
@@ -36,8 +36,8 @@ func NewCommandRepository(database *postgres.Database) (*CommandRepository, erro
 	return &commandRepository, nil
 }
 
-func (cr *CommandRepository) SaveCommand(command string) (int64, error) {
-	const op = "database.postgres.repositories.SaveCommand"
+func (cr *Repository) SaveCommand(command string) (int64, error) {
+	const op = "database.postgres.repository.SaveCommand"
 
 	var id int64
 	err := cr.db.QueryRow(`
@@ -50,8 +50,8 @@ func (cr *CommandRepository) SaveCommand(command string) (int64, error) {
 	return id, nil
 }
 
-func (cr *CommandRepository) DeleteCommand(id int64) error {
-	const op = "database.postgres.repositories.DeleteCommand"
+func (cr *Repository) DeleteCommand(id int64) error {
+	const op = "database.postgres.repository.DeleteCommand"
 
 	_, err := cr.db.Exec(`
 		DELETE FROM command WHERE id = $1;
@@ -63,8 +63,8 @@ func (cr *CommandRepository) DeleteCommand(id int64) error {
 	return nil
 }
 
-func (cr *CommandRepository) GetCommands() ([]models.Command, error) {
-	const op = "database.postgres.repositories.GetCommands"
+func (cr *Repository) GetCommands() ([]models.Command, error) {
+	const op = "database.postgres.repository.GetCommands"
 
 	rows, err := cr.db.Query(`
 		SELECT id, command FROM command;
@@ -95,8 +95,8 @@ func (cr *CommandRepository) GetCommands() ([]models.Command, error) {
 	return commands, nil
 }
 
-func (cr *CommandRepository) GetCommand(id int64) (models.Command, error) {
-	const op = "database.postgres.repositories.GetCommand"
+func (cr *Repository) GetCommand(id int64) (models.Command, error) {
+	const op = "database.postgres.repository.GetCommand"
 
 	var command models.Command
 
