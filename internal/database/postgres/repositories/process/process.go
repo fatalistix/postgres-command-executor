@@ -12,32 +12,10 @@ type Repository struct {
 	db *sql.DB
 }
 
-func NewRepository(database *postgres.Database) (*Repository, error) {
-	const op = "database.postgres.NewRepository"
-
-	executionRepository := Repository{db: database.DB()}
-	_, err := executionRepository.db.Exec(`
-		CREATE TYPE process_status AS ENUM('executing', 'finished', 'error');
-	`)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+func NewRepository(database *postgres.Database) *Repository {
+	return &Repository{
+		db: database.DB(),
 	}
-
-	_, err = executionRepository.db.Exec(`
-		CREATE TABLE IF NOT EXISTS process (
-			id UUID UNIQUE NOT NULL,
-			output TEXT NOT NULL DEFAULT '',
-			error TEXT NOT NULL DEFAULT '',
-			status process_status NOT NULL DEFAULT 'executing',
-			exit_code INT NOT NULL DEFAULT -1,
-			PRIMARY KEY (id)
-		);
-	`)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-
-	return &executionRepository, nil
 }
 
 func (r *Repository) CreateProcess() (uuid.UUID, error) {

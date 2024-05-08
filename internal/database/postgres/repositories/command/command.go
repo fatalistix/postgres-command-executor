@@ -11,29 +11,10 @@ type Repository struct {
 	db *sql.DB
 }
 
-func NewRepository(database *postgres.Database) (*Repository, error) {
-	const op = "database.postgres.NewCommandRepository"
-
-	commandRepository := Repository{db: database.DB()}
-	_, err := commandRepository.db.Exec(`
-		CREATE TABLE IF NOT EXISTS command (
-		    id SERIAL UNIQUE NOT NULL,
-			command TEXT UNIQUE NOT NULL,
-			PRIMARY KEY(id)
-		);
-	`)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+func NewRepository(database *postgres.Database) *Repository {
+	return &Repository{
+		db: database.DB(),
 	}
-
-	_, err = commandRepository.db.Exec(`
-		CREATE INDEX IF NOT EXISTS idx_bash ON command(command);
-	`)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-
-	return &commandRepository, nil
 }
 
 func (cr *Repository) SaveCommand(command string) (int64, error) {
