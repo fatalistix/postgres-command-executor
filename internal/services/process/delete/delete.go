@@ -12,14 +12,14 @@ type ProcessDeleter interface {
 }
 
 type Service struct {
-	sm      *syncmap.SyncMap[uuid.UUID, *wrapper.CmdWrapper]
 	deleter ProcessDeleter
+	sm      *syncmap.SyncMap[uuid.UUID, *wrapper.CmdWrapper]
 }
 
-func NewService(sm *syncmap.SyncMap[uuid.UUID, *wrapper.CmdWrapper], deleter ProcessDeleter) *Service {
+func NewService(deleter ProcessDeleter, sm *syncmap.SyncMap[uuid.UUID, *wrapper.CmdWrapper]) *Service {
 	return &Service{
-		sm:      sm,
 		deleter: deleter,
+		sm:      sm,
 	}
 }
 
