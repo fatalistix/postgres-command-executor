@@ -10,11 +10,11 @@ import (
 )
 
 type Response struct {
-	ProcessID uuid.UUID `json:"process_id"`
-	Output    string    `json:"output"`
-	Error     string    `json:"error"`
-	Status    string    `json:"status"`
-	ExitCode  int       `json:"exit_code"`
+	ID       uuid.UUID `json:"id"`
+	Output   string    `json:"output"`
+	Error    string    `json:"error"`
+	Status   string    `json:"status"`
+	ExitCode int       `json:"exit_code"`
 }
 
 type ProcessProvider interface {
@@ -53,11 +53,11 @@ func MakeGetHandlerFunc(log *slog.Logger, provider ProcessProvider) http.Handler
 		log.Info("process got")
 
 		response := Response{
-			ProcessID: process.ID,
-			Output:    process.Output,
-			Error:     process.Error,
-			Status:    string(process.Status),
-			ExitCode:  process.ExitCode,
+			ID:       process.ID,
+			Output:   process.Output,
+			Error:    process.Error,
+			Status:   string(process.Status),
+			ExitCode: process.ExitCode,
 		}
 
 		encoder := json.NewEncoder(w)
