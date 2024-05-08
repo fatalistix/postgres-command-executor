@@ -33,15 +33,8 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	commandRepository, err := command.NewRepository(database)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-
-	processRepository, err := process.NewRepository(database)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
+	commandRepository := command.NewRepository(database)
+	processRepository := process.NewRepository(database)
 
 	mux := http.NewServeMux()
 
