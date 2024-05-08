@@ -13,7 +13,7 @@ type Repository struct {
 }
 
 func NewRepository(database *postgres.Database) (*Repository, error) {
-	const op = "database.postgres.NewExecutionRepository"
+	const op = "database.postgres.NewRepository"
 
 	executionRepository := Repository{db: database.DB()}
 	_, err := executionRepository.db.Exec(`
@@ -41,7 +41,7 @@ func NewRepository(database *postgres.Database) (*Repository, error) {
 }
 
 func (r *Repository) CreateProcess() (uuid.UUID, error) {
-	const op = "database.postgres.RegisterExecution"
+	const op = "database.postgres.CreateProcess"
 
 	id, err := uuid.NewRandom()
 	if err != nil {
@@ -59,7 +59,7 @@ func (r *Repository) CreateProcess() (uuid.UUID, error) {
 }
 
 func (r *Repository) AddOutput(id uuid.UUID, output string, error string) error {
-	const op = "database.postgres.AddOutputToExecution"
+	const op = "database.postgres.AddOutput"
 
 	_, err := r.db.Exec(`
 		UPDATE process SET output = output || $1, error = error || $2 WHERE id = $3;
@@ -92,7 +92,7 @@ func (r *Repository) FinishProcess(id uuid.UUID, exitCode int) error {
 }
 
 func (r *Repository) DeleteProcess(id uuid.UUID) error {
-	const op = "database.postgres.DeleteExecution"
+	const op = "database.postgres.DeleteProcess"
 
 	_, err := r.db.Exec(`
 		DELETE FROM process WHERE id = $1;
@@ -104,8 +104,8 @@ func (r *Repository) DeleteProcess(id uuid.UUID) error {
 	return nil
 }
 
-func (r *Repository) GetProcess(id uuid.UUID) (*models.Process, error) {
-	const op = "database.postgres.GetExecution"
+func (r *Repository) Process(id uuid.UUID) (*models.Process, error) {
+	const op = "database.postgres.Process"
 
 	var processOutput string
 	var processError string
