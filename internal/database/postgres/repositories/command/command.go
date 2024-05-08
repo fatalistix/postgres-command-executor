@@ -63,8 +63,8 @@ func (cr *Repository) DeleteCommand(id int64) error {
 	return nil
 }
 
-func (cr *Repository) GetCommands() ([]models.Command, error) {
-	const op = "database.postgres.repositories.GetCommands"
+func (cr *Repository) Commands() ([]models.Command, error) {
+	const op = "database.postgres.repositories.Commands"
 
 	rows, err := cr.db.Query(`
 		SELECT id, command FROM command;
@@ -95,8 +95,8 @@ func (cr *Repository) GetCommands() ([]models.Command, error) {
 	return commands, nil
 }
 
-func (cr *Repository) GetCommand(id int64) (models.Command, error) {
-	const op = "database.postgres.repositories.GetCommand"
+func (cr *Repository) Command(id int64) (models.Command, error) {
+	const op = "database.postgres.repositories.Command"
 
 	var command models.Command
 
