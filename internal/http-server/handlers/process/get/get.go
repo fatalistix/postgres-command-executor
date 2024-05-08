@@ -1,4 +1,4 @@
-package process
+package get
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-type GetResponse struct {
+type Response struct {
 	ProcessID uuid.UUID `json:"process_id"`
 	Output    string    `json:"output"`
 	Error     string    `json:"error"`
@@ -17,11 +17,11 @@ type GetResponse struct {
 	ExitCode  int       `json:"exit_code"`
 }
 
-type Getter interface {
-	Get(id uuid.UUID) (*models.Process, error)
+type ProcessProvider interface {
+	Process(id uuid.UUID) (*models.Process, error)
 }
 
-func NewGetHandlerFunc(log *slog.Logger, getter Getter) http.HandlerFunc {
+func MakeGetHandlerFunc(log *slog.Logger, provider ProcessProvider) http.HandlerFunc {
 	const op = "http-server.handlers.process.get.NewGetHandlerFunc"
 
 	log = log.With(
@@ -41,7 +41,7 @@ func NewGetHandlerFunc(log *slog.Logger, getter Getter) http.HandlerFunc {
 
 		log.Info("process id parsed", slog.Any("id", id))
 
-		process, err := getter.Get(id)
+		process, err := provider.Process(id)
 		if err != nil {
 			log.Error("error getting process", slogattr.Err(err))
 
@@ -52,7 +52,7 @@ func NewGetHandlerFunc(log *slog.Logger, getter Getter) http.HandlerFunc {
 
 		log.Info("process got")
 
-		response := GetResponse{
+		response := Response{
 			ProcessID: process.ID,
 			Output:    process.Output,
 			Error:     process.Error,

@@ -1,4 +1,4 @@
-package process
+package execute
 
 import (
 	"encoding/json"
@@ -9,11 +9,11 @@ import (
 	"net/http"
 )
 
-type ExecuteRequest struct {
+type Request struct {
 	ID int64 `json:"id"`
 }
 
-type ExecuteResponse struct {
+type Response struct {
 	ProcessID uuid.UUID `json:"process_id"`
 }
 
@@ -21,7 +21,7 @@ type CommandExecutionStarter interface {
 	StartCommandExecution(id int64) (uuid.UUID, error)
 }
 
-func NewExecuteHandlerFunc(log *slog.Logger, executionStarter CommandExecutionStarter) http.HandlerFunc {
+func MakeExecuteHandlerFunc(log *slog.Logger, executionStarter CommandExecutionStarter) http.HandlerFunc {
 	const op = "http-server.handlers.process.NewExecuteHandlerFunc"
 
 	log = log.With(
@@ -37,7 +37,7 @@ func NewExecuteHandlerFunc(log *slog.Logger, executionStarter CommandExecutionSt
 			return
 		}
 
-		var request ExecuteRequest
+		var request Request
 
 		decoder := json.NewDecoder(r.Body)
 		decoder.DisallowUnknownFields()
