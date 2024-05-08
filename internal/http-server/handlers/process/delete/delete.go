@@ -1,4 +1,4 @@
-package process
+package delete
 
 import (
 	slogattr "github.com/fatalistix/postgres-command-executor/internal/lib/log/slog/attr"
@@ -7,11 +7,11 @@ import (
 	"net/http"
 )
 
-type Deleter interface {
-	Delete(id uuid.UUID) error
+type ProcessDeleter interface {
+	DeleteProcess(id uuid.UUID) error
 }
 
-func NewDeleteHandlerFunc(log *slog.Logger, deleter Deleter) http.HandlerFunc {
+func MakeDeleteHandlerFunc(log *slog.Logger, deleter ProcessDeleter) http.HandlerFunc {
 	const op = "http-server.handlers.process.delete.NewDeleteHandlerFunc"
 
 	log = log.With(
@@ -31,7 +31,7 @@ func NewDeleteHandlerFunc(log *slog.Logger, deleter Deleter) http.HandlerFunc {
 
 		log.Info("process id parsed", slog.Any("id", id))
 
-		err = deleter.Delete(id)
+		err = deleter.DeleteProcess(id)
 		if err != nil {
 			log.Error("error deleting process", slogattr.Err(err))
 
