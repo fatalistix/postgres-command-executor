@@ -32,12 +32,12 @@ type Service struct {
 	sm              *syncmap.SyncMap[uuid.UUID, *wrapper.CmdWrapper]
 }
 
-func NewProcessExecutor(
+func NewService(
 	commandProvider CommandProvider,
 	processProvider ProcessProvider,
 	sm *syncmap.SyncMap[uuid.UUID, *wrapper.CmdWrapper],
-) *ExecuteService {
-	return &ExecuteService{
+) *Service {
+	return &Service{
 		commandProvider: commandProvider,
 		processProvider: processProvider,
 		sm:              sm,
@@ -49,15 +49,15 @@ type readResult struct {
 	Err    error
 }
 
-func (e *ExecuteService) StartCommandExecution(commandID int64) (uuid.UUID, error) {
+func (s *Service) StartCommandExecution(commandID int64) (uuid.UUID, error) {
 	const op = "services.process.executor.ExecuteCommand"
 
-	command, err := e.commandProvider.Command(commandID)
+	command, err := s.commandProvider.Command(commandID)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	processID, err := e.processProvider.CreateProcess()
+	processID, err := s.processProvider.CreateProcess()
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -85,9 +85,9 @@ func (e *ExecuteService) StartCommandExecution(commandID int64) (uuid.UUID, erro
 	stderrCh := make(chan readResult)
 	go readInLoop(stderr, stderrCh)
 
-	go e.listenStdoutAndStderr(processID, stdoutCh, stderrCh)
+	go s.listenStdoutAndStderr(processID, stdoutCh, stderrCh)
 
-	e.sm.Store(processID, &wrapper.CmdWrapper{
+	s.sm.Store(processID, &wrapper.CmdWrapper{
 		Cmd:    cmd,
 		Stdout: stdout,
 		Stderr: stderr,
@@ -96,27 +96,27 @@ func (e *ExecuteService) StartCommandExecution(commandID int64) (uuid.UUID, erro
 	return processID, nil
 }
 
-func (e *ExecuteService) listenStdoutAndStderr(processID uuid.UUID, stdoutCh chan readResult, stderrCh chan readResult) {
+func (s *Service) listenStdoutAndStderr(processID uuid.UUID, stdoutCh chan readResult, stderrCh chan readResult) {
 	var stdoutErr error
 	var stderrErr error
 	for {
 		select {
 		case result := <-stdoutCh:
-			_ = e.processProvider.AddOutput(processID, result.Result, "")
+			_ = s.processProvider.AddOutput(processID, result.Result, "")
 			if result.Err != nil {
 				stdoutErr = result.Err
 			}
 		case result := <-stderrCh:
-			_ = e.processProvider.AddOutput(processID, "", result.Result)
+			_ = s.processProvider.AddOutput(processID, "", result.Result)
 			if result.Err != nil {
 				stderrErr = result.Err
 			}
 		}
 		if stdoutErr != nil && stderrErr != nil {
 			if errors.Is(stdoutErr, io.EOF) && errors.Is(stderrErr, io.EOF) {
-				_ = e.processProvider.FinishProcess(processID, 0)
+				_ = s.processProvider.FinishProcess(processID, 0)
 			} else {
-				_ = e.processProvider.FinishProcess(processID, 1)
+				_ = s.processProvider.FinishProcess(processID, 1)
 			}
 			return
 		}
