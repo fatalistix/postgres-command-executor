@@ -1,4 +1,4 @@
-package command
+package delete
 
 import (
 	slogattr "github.com/fatalistix/postgres-command-executor/internal/lib/log/slog/attr"
@@ -8,11 +8,11 @@ import (
 )
 
 type CommandDeleter interface {
-	Delete(id int64) error
+	DeleteCommand(id int64) error
 }
 
-func NewDeleteHandlerFunc(log *slog.Logger, deleter commandDeleter) http.HandlerFunc {
-	const op = "http-server.handlers.command.NewDeleteHandlerFunc"
+func MakeDeleteHandlerFunc(log *slog.Logger, deleter CommandDeleter) http.HandlerFunc {
+	const op = "http-server.handlers.command.delete.NewDeleteHandlerFunc"
 
 	log = log.With(
 		slog.String("op", op),
@@ -33,7 +33,7 @@ func NewDeleteHandlerFunc(log *slog.Logger, deleter commandDeleter) http.Handler
 
 		log.Info("request path value parsed")
 
-		err = deleter.Delete(id)
+		err = deleter.DeleteCommand(id)
 		if err != nil {
 			log.Error("error deleting command", slogattr.Err(err))
 
