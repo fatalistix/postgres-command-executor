@@ -2,9 +2,12 @@ package command
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+	"github.com/fatalistix/postgres-command-executor/internal/database"
 	"github.com/fatalistix/postgres-command-executor/internal/database/postgres"
 	"github.com/fatalistix/postgres-command-executor/internal/domain/models"
+	"github.com/lib/pq"
 )
 
 type Repository struct {
@@ -25,6 +28,12 @@ func (cr *Repository) SaveCommand(command string) (int64, error) {
 		INSERT INTO command(command) VALUES ($1) RETURNING id;
 	`, command).Scan(&id)
 	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			if pqErr.Code.Name() == "unique_violation" {
+				return 0, fmt.Errorf("%s: %w", op, database.ErrCommandExists)
+			}
+		}
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -85,6 +94,9 @@ func (cr *Repository) Command(id int64) (models.Command, error) {
 		SELECT id, command FROM command WHERE id = $1
 	`, id).Scan(&command.ID, &command.Command)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.Command{}, fmt.Errorf("%s: %w", op, database.ErrCommandNotFound)
+		}
 		return models.Command{}, fmt.Errorf("%s: %w", op, err)
 	}
 
