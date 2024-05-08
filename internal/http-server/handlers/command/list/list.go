@@ -22,7 +22,7 @@ type CommandProvider interface {
 }
 
 func MakeListHandlerFunc(log *slog.Logger, provider CommandProvider) http.HandlerFunc {
-	const op = "http-server.handlers.command.list.NewListHandlerFunc"
+	const op = "http-server.handlers.command.list.MakeListHandlerFunc"
 
 	log = log.With(
 		slog.String("op", op),

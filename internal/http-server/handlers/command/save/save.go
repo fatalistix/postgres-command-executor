@@ -21,7 +21,7 @@ type CommandSaver interface {
 }
 
 func MakeSaveHandlerFunc(log *slog.Logger, saver CommandSaver) http.HandlerFunc {
-	const op = "http-server.handlers.command.save.NewSaveHandlerFunc"
+	const op = "http-server.handlers.command.save.MakeSaveHandlerFunc"
 
 	log = log.With(
 		slog.String("op", op),

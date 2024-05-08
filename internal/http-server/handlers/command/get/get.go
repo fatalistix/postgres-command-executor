@@ -19,7 +19,7 @@ type CommandProvider interface {
 }
 
 func MakeGetHandlerFunc(log *slog.Logger, provider CommandProvider) http.HandlerFunc {
-	const op = "http-server.handlers.command.get.NewGetHandlerFunc"
+	const op = "http-server.handlers.command.get.MakeGetHandlerFunc"
 
 	log = log.With(
 		slog.String("op", op),

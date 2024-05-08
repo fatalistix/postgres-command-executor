@@ -22,7 +22,7 @@ type ProcessProvider interface {
 }
 
 func MakeGetHandlerFunc(log *slog.Logger, provider ProcessProvider) http.HandlerFunc {
-	const op = "http-server.handlers.process.get.NewGetHandlerFunc"
+	const op = "http-server.handlers.process.get.MakeGetHandlerFunc"
 
 	log = log.With(
 		slog.String("op", op),

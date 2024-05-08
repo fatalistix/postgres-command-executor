@@ -22,7 +22,7 @@ type CommandExecutionStarter interface {
 }
 
 func MakeExecuteHandlerFunc(log *slog.Logger, executionStarter CommandExecutionStarter) http.HandlerFunc {
-	const op = "http-server.handlers.process.NewExecuteHandlerFunc"
+	const op = "http-server.handlers.process.MakeExecuteHandlerFunc"
 
 	log = log.With(
 		slog.String("op", op),

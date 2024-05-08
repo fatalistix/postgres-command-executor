@@ -12,7 +12,7 @@ type ProcessDeleter interface {
 }
 
 func MakeDeleteHandlerFunc(log *slog.Logger, deleter ProcessDeleter) http.HandlerFunc {
-	const op = "http-server.handlers.process.delete.NewDeleteHandlerFunc"
+	const op = "http-server.handlers.process.delete.MakeDeleteHandlerFunc"
 
 	log = log.With(
 		slog.String("op", op),

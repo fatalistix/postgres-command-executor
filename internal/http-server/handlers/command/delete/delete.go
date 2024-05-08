@@ -12,7 +12,7 @@ type CommandDeleter interface {
 }
 
 func MakeDeleteHandlerFunc(log *slog.Logger, deleter CommandDeleter) http.HandlerFunc {
-	const op = "http-server.handlers.command.delete.NewDeleteHandlerFunc"
+	const op = "http-server.handlers.command.delete.MakeDeleteHandlerFunc"
 
 	log = log.With(
 		slog.String("op", op),
