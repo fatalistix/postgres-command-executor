@@ -124,15 +124,13 @@ func (s *Service) listenStdoutAndStderr(processID uuid.UUID, stdoutCh chan readR
 }
 
 func readInLoop(reader io.Reader, resultCh chan<- readResult) {
-	const op = "services.process.executor.readInLoop"
-
 	buffer := make([]byte, bufferSize)
 
 	for {
 		n, err := reader.Read(buffer)
 		resultCh <- readResult{
 			Result: string(buffer[:n]),
-			Err:    fmt.Errorf("%s: %w", op, err),
+			Err:    err,
 		}
 		if err != nil {
 			return
