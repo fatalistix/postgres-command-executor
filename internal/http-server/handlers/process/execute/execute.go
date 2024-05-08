@@ -10,7 +10,7 @@ import (
 )
 
 type Request struct {
-	ID int64 `json:"id"`
+	CommandID int64 `json:"command_id"`
 }
 
 type Response struct {
@@ -51,7 +51,7 @@ func MakeExecuteHandlerFunc(log *slog.Logger, executionStarter CommandExecutionS
 
 		log.Info("request body decoded")
 
-		processID, err := executionStarter.StartCommandExecution(request.ID)
+		processID, err := executionStarter.StartCommandExecution(request.CommandID)
 		if err != nil {
 			log.Error("error starting command execution", slogattr.Err(err))
 
