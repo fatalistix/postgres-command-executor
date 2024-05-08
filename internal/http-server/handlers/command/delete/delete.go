@@ -7,11 +7,11 @@ import (
 	"strconv"
 )
 
-type Deleter interface {
+type CommandDeleter interface {
 	Delete(id int64) error
 }
 
-func NewDeleteHandlerFunc(log *slog.Logger, deleter Deleter) http.HandlerFunc {
+func NewDeleteHandlerFunc(log *slog.Logger, deleter commandDeleter) http.HandlerFunc {
 	const op = "http-server.handlers.command.NewDeleteHandlerFunc"
 
 	log = log.With(

@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"github.com/fatalistix/postgres-command-executor/internal/config"
 	"github.com/fatalistix/postgres-command-executor/internal/database/postgres"
-	"github.com/fatalistix/postgres-command-executor/internal/database/postgres/repositories"
-	commanddelete "github.com/fatalistix/postgres-command-executor/internal/http-server/handlers/command/delete"
-	commandget "github.com/fatalistix/postgres-command-executor/internal/http-server/handlers/command/get"
-	commandlist "github.com/fatalistix/postgres-command-executor/internal/http-server/handlers/command/list"
-	commandsave "github.com/fatalistix/postgres-command-executor/internal/http-server/handlers/command/save"
+	"github.com/fatalistix/postgres-command-executor/internal/database/postgres/repositories/command"
+	"github.com/fatalistix/postgres-command-executor/internal/database/postgres/repositories/process"
+	commandhandlers "github.com/fatalistix/postgres-command-executor/internal/http-server/handlers/command"
+	processhandlers "github.com/fatalistix/postgres-command-executor/internal/http-server/handlers/process"
 	"log/slog"
 	"net/http"
 )
@@ -34,16 +33,20 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	commandRepository, err := repositories.NewCommandRepository(database)
+	commandRepository, err := command.NewRepository(database)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	processRepository, err := process.NewRepository(database)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("POST /commands", commandsave.NewSaveHandlerFunc(log, commandRepository))
-	mux.HandleFunc("DELETE /command/{id}", commanddelete.NewDeleteHandlerFunc(log, commandRepository))
-	mux.HandleFunc("GET /commands", commandlist.NewListHandlerFunc(log, commandRepository))
-	mux.HandleFunc("GET /command/{id}", commandget.NewGetHandlerFunc(log, commandRepository))
+
+	commandhandlers.RegisterHandlers(mux, log, commandRepository)
+	processhandlers.RegisterHandlers(mux, log, processRepository, commandRepository)
 
 	srv := http.Server{
 		Addr:         cfg.HTTPServer.Address,
@@ -55,6 +58,7 @@ func NewApp(log *slog.Logger, cfg config.Config) (*App, error) {
 
 	return &App{srv: &srv, database: database}, nil
 }
+
 func (a *App) Run() error {
 	const op = "app.Run"
 

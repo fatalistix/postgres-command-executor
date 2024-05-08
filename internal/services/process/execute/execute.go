@@ -1,6 +1,7 @@
-package process
+package execute
 
 import (
+	"errors"
 	"fmt"
 	"github.com/fatalistix/postgres-command-executor/internal/domain/models"
 	"github.com/fatalistix/postgres-command-executor/internal/domain/wrapper"
@@ -14,28 +15,32 @@ const (
 	bufferSize = 1024
 )
 
-type CommandGetter interface {
-	Get(id int64) (models.Command, error)
+type CommandProvider interface {
+	Command(id int64) (models.Command, error)
 }
 
-type Provider interface {
-	Create() (uuid.UUID, error)
+type ProcessProvider interface {
+	CreateProcess() (uuid.UUID, error)
 	AddOutput(processID uuid.UUID, output string, error string) error
-	Finish(processID uuid.UUID, exitCode int) error
-	Delete(processID uuid.UUID) error
+	FinishProcess(processID uuid.UUID, exitCode int) error
+	DeleteProcess(processID uuid.UUID) error
 }
 
-type ExecuteService struct {
-	commandGetter CommandGetter
-	provider      Provider
-	sm            *syncmap.SyncMap[uuid.UUID, *wrapper.CmdWrapper]
+type Service struct {
+	commandProvider CommandProvider
+	processProvider ProcessProvider
+	sm              *syncmap.SyncMap[uuid.UUID, *wrapper.CmdWrapper]
 }
 
-func NewProcessExecutor(getter CommandGetter, provider Provider, sm *syncmap.SyncMap[uuid.UUID, *wrapper.CmdWrapper]) *ExecuteService {
+func NewProcessExecutor(
+	commandProvider CommandProvider,
+	processProvider ProcessProvider,
+	sm *syncmap.SyncMap[uuid.UUID, *wrapper.CmdWrapper],
+) *ExecuteService {
 	return &ExecuteService{
-		commandGetter: getter,
-		provider:      provider,
-		sm:            sm,
+		commandProvider: commandProvider,
+		processProvider: processProvider,
+		sm:              sm,
 	}
 }
 
@@ -44,10 +49,10 @@ type readResult struct {
 	Err    error
 }
 
-func (e *ProcessExecutor) StartCommandExecution(commandID int64) (uuid.UUID, error) {
+func (e *ExecuteService) StartCommandExecution(commandID int64) (uuid.UUID, error) {
 	const op = "services.process.executor.ExecuteCommand"
 
-	command, err := e.commandGetter.GetCommand(commandID)
+	command, err := e.commandProvider.Command(commandID)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -91,7 +96,7 @@ func (e *ProcessExecutor) StartCommandExecution(commandID int64) (uuid.UUID, err
 	return processID, nil
 }
 
-func (e *ProcessExecutor) listenStdoutAndStderr(processID uuid.UUID, stdoutCh chan readResult, stderrCh chan readResult) {
+func (e *ExecuteService) listenStdoutAndStderr(processID uuid.UUID, stdoutCh chan readResult, stderrCh chan readResult) {
 	var stdoutErr error
 	var stderrErr error
 	for {
@@ -99,29 +104,36 @@ func (e *ProcessExecutor) listenStdoutAndStderr(processID uuid.UUID, stdoutCh ch
 		case result := <-stdoutCh:
 			_ = e.processProvider.AddOutput(processID, result.Result, "")
 			if result.Err != nil {
-				_ = e.processProvider.FinishProcess(processID, 1)
+				stdoutErr = result.Err
 			}
 		case result := <-stderrCh:
 			_ = e.processProvider.AddOutput(processID, "", result.Result)
 			if result.Err != nil {
-				_ = e.processProvider.FinishProcess(processID, 1)
+				stderrErr = result.Err
 			}
 		}
 		if stdoutErr != nil && stderrErr != nil {
-			if stdoutErr == io.EOF && stderrErr == io.EOF {
+			if errors.Is(stdoutErr, io.EOF) && errors.Is(stderrErr, io.EOF) {
 				_ = e.processProvider.FinishProcess(processID, 0)
-				return
+			} else {
+				_ = e.processProvider.FinishProcess(processID, 1)
 			}
+			return
 		}
 	}
 }
 
 func readInLoop(reader io.Reader, resultCh chan<- readResult) {
+	const op = "services.process.executor.readInLoop"
+
 	buffer := make([]byte, bufferSize)
 
 	for {
 		n, err := reader.Read(buffer)
-		resultCh <- readResult{Result: string(buffer[:n]), Err: err}
+		resultCh <- readResult{
+			Result: string(buffer[:n]),
+			Err:    fmt.Errorf("%s: %w", op, err),
+		}
 		if err != nil {
 			return
 		}
