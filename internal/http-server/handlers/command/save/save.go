@@ -1,4 +1,4 @@
-package command
+package save
 
 import (
 	"encoding/json"
@@ -8,20 +8,20 @@ import (
 	"net/http"
 )
 
-type SaveRequest struct {
+type Request struct {
 	Command string `json:"command"`
 }
 
-type SaveResponse struct {
+type Response struct {
 	ID int64 `json:"id"`
 }
 
-type Saver interface {
-	Save(command string) (int64, error)
+type CommandSaver interface {
+	SaveCommand(command string) (int64, error)
 }
 
-func NewSaveHandlerFunc(log *slog.Logger, saver Saver) http.HandlerFunc {
-	const op = "http-server.handlers.command.NewSaveHandlerFunc"
+func MakeSaveHandlerFunc(log *slog.Logger, saver CommandSaver) http.HandlerFunc {
+	const op = "http-server.handlers.command.save.NewSaveHandlerFunc"
 
 	log = log.With(
 		slog.String("op", op),
@@ -36,7 +36,7 @@ func NewSaveHandlerFunc(log *slog.Logger, saver Saver) http.HandlerFunc {
 			return
 		}
 
-		var request SaveRequest
+		var request Request
 
 		decoder := json.NewDecoder(r.Body)
 		decoder.DisallowUnknownFields()
@@ -50,7 +50,7 @@ func NewSaveHandlerFunc(log *slog.Logger, saver Saver) http.HandlerFunc {
 
 		log.Info("request body decoded")
 
-		id, err := saver.Save(request.Command)
+		id, err := saver.SaveCommand(request.Command)
 		if err != nil {
 			log.Error("error saving command", slogattr.Err(err))
 
@@ -61,7 +61,7 @@ func NewSaveHandlerFunc(log *slog.Logger, saver Saver) http.HandlerFunc {
 
 		log.Info("new command saved")
 
-		response := SaveResponse{ID: id}
+		response := Response{ID: id}
 		encoder := json.NewEncoder(w)
 		if err := encoder.Encode(response); err != nil {
 			log.Error("error encoding response", slogattr.Err(err))

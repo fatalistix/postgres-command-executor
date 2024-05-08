@@ -1,4 +1,4 @@
-package command
+package get
 
 import (
 	"encoding/json"
@@ -9,17 +9,17 @@ import (
 	"strconv"
 )
 
-type GetResponse struct {
+type Response struct {
 	ID      int64  `json:"id"`
 	Command string `json:"command"`
 }
 
-type Getter interface {
-	GetCommand(id int64) (models.Command, error)
+type CommandProvider interface {
+	Command(id int64) (models.Command, error)
 }
 
-func NewGetHandlerFunc(log *slog.Logger, getter Getter) http.HandlerFunc {
-	const op = "http-server.handlers.command.NewGetHandlerFunc"
+func MakeGetHandlerFunc(log *slog.Logger, provider CommandProvider) http.HandlerFunc {
+	const op = "http-server.handlers.command.get.NewGetHandlerFunc"
 
 	log = log.With(
 		slog.String("op", op),
@@ -38,7 +38,7 @@ func NewGetHandlerFunc(log *slog.Logger, getter Getter) http.HandlerFunc {
 
 		log.Info("request path value parsed", slog.Any("id", id))
 
-		command, err := getter.Get(id)
+		command, err := provider.Command(id)
 		if err != nil {
 			log.Error("error getting command", slogattr.Err(err))
 
@@ -49,7 +49,7 @@ func NewGetHandlerFunc(log *slog.Logger, getter Getter) http.HandlerFunc {
 
 		log.Info("command got")
 
-		response := GetResponse{ID: command.ID, Command: command.Command}
+		response := Response{ID: command.ID, Command: command.Command}
 		encoder := json.NewEncoder(w)
 		if err := encoder.Encode(response); err != nil {
 			log.Error("error encoding response", slogattr.Err(err))

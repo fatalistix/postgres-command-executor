@@ -1,4 +1,4 @@
-package command
+package list
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-type ListResponse struct {
+type Response struct {
 	Commands []Command `json:"commands"`
 }
 
@@ -17,12 +17,12 @@ type Command struct {
 	Command string `json:"command"`
 }
 
-type ListGetter interface {
-	GetList() ([]models.Command, error)
+type CommandProvider interface {
+	Commands() ([]models.Command, error)
 }
 
-func NewListHandlerFunc(log *slog.Logger, listGetter ListGetter) http.HandlerFunc {
-	const op = "http-server.handlers.command.NewListHandlerFunc"
+func MakeListHandlerFunc(log *slog.Logger, provider CommandProvider) http.HandlerFunc {
+	const op = "http-server.handlers.command.list.NewListHandlerFunc"
 
 	log = log.With(
 		slog.String("op", op),
@@ -31,7 +31,7 @@ func NewListHandlerFunc(log *slog.Logger, listGetter ListGetter) http.HandlerFun
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Info("request received")
 
-		commands, err := listGetter.GetList()
+		commands, err := provider.Commands()
 		if err != nil {
 			log.Error("error getting commands", slogattr.Err(err))
 
@@ -42,7 +42,7 @@ func NewListHandlerFunc(log *slog.Logger, listGetter ListGetter) http.HandlerFun
 
 		log.Info("commands got")
 
-		response := ListResponse{Commands: make([]Command, 0, len(commands))}
+		response := Response{Commands: make([]Command, 0, len(commands))}
 		for _, c := range commands {
 			response.Commands = append(response.Commands, Command{c.ID, c.Command})
 		}
