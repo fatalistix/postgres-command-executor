@@ -1,6 +1,8 @@
 package delete
 
 import (
+	"errors"
+	"github.com/fatalistix/postgres-command-executor/internal/database"
 	slogattr "github.com/fatalistix/postgres-command-executor/internal/lib/log/slog/attr"
 	"github.com/google/uuid"
 	"log/slog"
@@ -22,9 +24,9 @@ func MakeDeleteHandlerFunc(log *slog.Logger, deleter ProcessDeleter) http.Handle
 		pathValueId := r.PathValue("id")
 		id, err := uuid.Parse(pathValueId)
 		if err != nil {
-			log.Error("unable to parse id '"+pathValueId+"' to UUID", slogattr.Err(err))
+			log.Error("unable to parse id to UUID", slogattr.Err(err), slog.String("id", pathValueId))
 
-			http.Error(w, "unable to parse id to UUID", http.StatusBadRequest)
+			http.Error(w, "invalid id", http.StatusBadRequest)
 
 			return
 		}
@@ -33,9 +35,13 @@ func MakeDeleteHandlerFunc(log *slog.Logger, deleter ProcessDeleter) http.Handle
 
 		err = deleter.DeleteProcess(id)
 		if err != nil {
-			log.Error("error deleting process", slogattr.Err(err))
+			log.Error("error deleting process", slogattr.Err(err), slog.Any("id", id))
 
-			http.Error(w, "error deleting process: "+err.Error(), http.StatusBadRequest)
+			if errors.Is(err, database.ErrProcessNotFound) {
+				http.Error(w, "process not found", http.StatusNotFound)
+			} else {
+				http.Error(w, "error deleting process", http.StatusInternalServerError)
+			}
 
 			return
 		}

@@ -2,6 +2,8 @@ package get
 
 import (
 	"encoding/json"
+	"errors"
+	"github.com/fatalistix/postgres-command-executor/internal/database"
 	"github.com/fatalistix/postgres-command-executor/internal/domain/models"
 	slogattr "github.com/fatalistix/postgres-command-executor/internal/lib/log/slog/attr"
 	"github.com/google/uuid"
@@ -32,9 +34,9 @@ func MakeGetHandlerFunc(log *slog.Logger, provider ProcessProvider) http.Handler
 		pathValueId := r.PathValue("id")
 		id, err := uuid.Parse(pathValueId)
 		if err != nil {
-			log.Error("unable to parse id '"+pathValueId+"' to UUID", slogattr.Err(err))
+			log.Error("unable to parse id to UUID", slogattr.Err(err), slog.String("id", pathValueId))
 
-			http.Error(w, "unable to parse id to UUID", http.StatusBadRequest)
+			http.Error(w, "invalid id", http.StatusBadRequest)
 
 			return
 		}
@@ -43,14 +45,18 @@ func MakeGetHandlerFunc(log *slog.Logger, provider ProcessProvider) http.Handler
 
 		process, err := provider.Process(id)
 		if err != nil {
-			log.Error("error getting process", slogattr.Err(err))
+			log.Error("error getting process", slogattr.Err(err), slog.Any("id", id))
 
-			http.Error(w, "error getting process: "+err.Error(), http.StatusBadRequest)
+			if errors.Is(err, database.ErrProcessNotFound) {
+				http.Error(w, "process not found", http.StatusNotFound)
+			} else {
+				http.Error(w, "error getting process", http.StatusInternalServerError)
+			}
 
 			return
 		}
 
-		log.Info("process got")
+		log.Info("process got", slog.Any("id", id), slog.Any("process", process))
 
 		response := Response{
 			ID:       process.ID,
@@ -62,7 +68,7 @@ func MakeGetHandlerFunc(log *slog.Logger, provider ProcessProvider) http.Handler
 
 		encoder := json.NewEncoder(w)
 		if err := encoder.Encode(response); err != nil {
-			log.Error("error encoding response", slogattr.Err(err))
+			log.Error("error encoding response", slogattr.Err(err), slog.Any("response", response))
 
 			http.Error(w, "error encoding response", http.StatusInternalServerError)
 
