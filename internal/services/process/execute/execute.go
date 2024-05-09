@@ -118,21 +118,23 @@ func (s *Service) listenStdoutAndStderr(processID uuid.UUID, stdoutCh chan readR
 			} else {
 				_ = s.processProvider.FinishProcess(processID, 1)
 			}
+			s.sm.Delete(processID)
 			return
 		}
 	}
 }
 
-func readInLoop(reader io.Reader, resultCh chan<- readResult) {
+func readInLoop(readCloser io.ReadCloser, resultCh chan<- readResult) {
 	buffer := make([]byte, bufferSize)
 
 	for {
-		n, err := reader.Read(buffer)
+		n, err := readCloser.Read(buffer)
 		resultCh <- readResult{
 			Result: string(buffer[:n]),
 			Err:    err,
 		}
 		if err != nil {
+			_ = readCloser.Close()
 			return
 		}
 	}
