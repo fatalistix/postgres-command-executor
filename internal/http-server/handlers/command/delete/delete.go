@@ -9,6 +9,7 @@ import (
 	"strconv"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.43.0 --name=CommandDeleter
 type CommandDeleter interface {
 	DeleteCommand(id int64) error
 }
