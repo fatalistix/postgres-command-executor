@@ -24,8 +24,6 @@ func MakeDeleteHandlerFunc(log *slog.Logger, deleter CommandDeleter) http.Handle
 		if err != nil {
 			log.Error("unable to parse id '"+pathValueId+"' to int64", slogattr.Err(err))
 
-			log.Error("unable to parse id to int64", slogattr.Err(err))
-
 			http.Error(w, "unable to parse id to int64", http.StatusBadRequest)
 
 			return
