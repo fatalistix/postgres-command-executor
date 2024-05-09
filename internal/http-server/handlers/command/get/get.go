@@ -16,6 +16,7 @@ type Response struct {
 	Command string `json:"command"`
 }
 
+//go:generate go run github.com/vektra/mockery/v2@v2.43.0 --name=CommandProvider
 type CommandProvider interface {
 	Command(id int64) (models.Command, error)
 }
@@ -47,7 +48,7 @@ func MakeGetHandlerFunc(log *slog.Logger, provider CommandProvider) http.Handler
 			if errors.Is(err, database.ErrCommandNotFound) {
 				http.Error(w, "command not found", http.StatusNotFound)
 			} else {
-				http.Error(w, "error getting command: "+err.Error(), http.StatusBadRequest)
+				http.Error(w, "error getting command", http.StatusInternalServerError)
 			}
 
 			return
