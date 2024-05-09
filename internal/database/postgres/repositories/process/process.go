@@ -25,14 +25,14 @@ func (r *Repository) CreateProcess() (uuid.UUID, error) {
 
 	id, err := uuid.NewRandom()
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
+		return uuid.Nil, handleError(op, err)
 	}
 
 	_, err = r.db.Exec(`
 		INSERT INTO process(id) VALUES ($1);
 	`, id)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
+		return uuid.Nil, handleError(op, err)
 	}
 
 	return id, nil
@@ -45,7 +45,7 @@ func (r *Repository) AddOutput(id uuid.UUID, output string, error string) error 
 		UPDATE process SET output = output || $1, error = error || $2 WHERE id = $3;
 	`, output, error, id)
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return handleError(op, err)
 	}
 
 	return nil
@@ -55,17 +55,17 @@ func (r *Repository) FinishProcess(id uuid.UUID, exitCode int) error {
 	const op = "database.postgres.FinishProcess"
 
 	var status string
-	if exitCode != 0 {
-		status = "error"
-	} else {
+	if exitCode == 0 {
 		status = "finished"
+	} else {
+		status = "error"
 	}
 
 	_, err := r.db.Exec(`
 		UPDATE process SET status = $1, exit_code = $2 WHERE id = $3;
 	`, status, exitCode, id)
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return handleError(op, err)
 	}
 
 	return nil
@@ -74,11 +74,11 @@ func (r *Repository) FinishProcess(id uuid.UUID, exitCode int) error {
 func (r *Repository) DeleteProcess(id uuid.UUID) error {
 	const op = "database.postgres.DeleteProcess"
 
-	_, err := r.db.Exec(`
-		DELETE FROM process WHERE id = $1;
-	`, id)
+	err := r.db.QueryRow(`
+		DELETE FROM process WHERE id = $1 RETURNING id;
+	`, id).Scan(&id)
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return handleError(op, err)
 	}
 
 	return nil
@@ -94,12 +94,8 @@ func (r *Repository) Process(id uuid.UUID) (*models.Process, error) {
 	err := r.db.QueryRow(`
 		SELECT output, error, status, exit_code FROM process WHERE id = $1;
 	`, id).Scan(&processOutput, &processError, &processStatus, &exitCode)
-
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("%s: %w", op, database.ErrProcessNotFound)
-		}
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, handleError(op, err)
 	}
 
 	var status models.ProcessStatus
@@ -119,4 +115,15 @@ func (r *Repository) Process(id uuid.UUID) (*models.Process, error) {
 		Status:   status,
 		ExitCode: exitCode,
 	}, nil
+}
+
+func handleError(message string, err error) error {
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("%s: %w", message, database.ErrProcessNotFound)
+		}
+		return fmt.Errorf("%s: %w", message, err)
+	}
+
+	return nil
 }
