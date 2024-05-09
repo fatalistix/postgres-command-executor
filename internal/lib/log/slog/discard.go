@@ -1,0 +1,32 @@
+package slog
+
+import (
+	"context"
+	"log/slog"
+)
+
+func Discard() *slog.Logger {
+	return slog.New(NewDiscardHandler())
+}
+
+type DiscardHandler struct{}
+
+func NewDiscardHandler() *DiscardHandler {
+	return &DiscardHandler{}
+}
+
+func (_ *DiscardHandler) Handle(_ context.Context, _ slog.Record) error {
+	return nil
+}
+
+func (_ *DiscardHandler) Enabled(_ context.Context, _ slog.Level) bool {
+	return false
+}
+
+func (h *DiscardHandler) WithAttrs(_ []slog.Attr) slog.Handler {
+	return h
+}
+
+func (h *DiscardHandler) WithGroup(_ string) slog.Handler {
+	return h
+}
