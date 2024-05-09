@@ -35,7 +35,7 @@ func MakeListHandlerFunc(log *slog.Logger, provider CommandProvider) http.Handle
 		if err != nil {
 			log.Error("error getting commands", slogattr.Err(err))
 
-			http.Error(w, "error getting commands: "+err.Error(), http.StatusBadRequest)
+			http.Error(w, "error getting commands", http.StatusInternalServerError)
 
 			return
 		}
@@ -49,9 +49,9 @@ func MakeListHandlerFunc(log *slog.Logger, provider CommandProvider) http.Handle
 
 		encoder := json.NewEncoder(w)
 		if err := encoder.Encode(response); err != nil {
-			log.Error("error encoding response", slogattr.Err(err))
+			log.Error("error encoding response", slogattr.Err(err), slog.Any("response", response))
 
-			http.Error(w, "error encoding response", http.StatusInternalServerError)
+			http.Error(w, "error writing response", http.StatusInternalServerError)
 
 			return
 		}

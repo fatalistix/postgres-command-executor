@@ -2,6 +2,8 @@ package save
 
 import (
 	"encoding/json"
+	"errors"
+	"github.com/fatalistix/postgres-command-executor/internal/database"
 	"github.com/fatalistix/postgres-command-executor/internal/lib/http-server/request/header"
 	slogattr "github.com/fatalistix/postgres-command-executor/internal/lib/log/slog/attr"
 	"log/slog"
@@ -48,25 +50,29 @@ func MakeSaveHandlerFunc(log *slog.Logger, saver CommandSaver) http.HandlerFunc 
 			return
 		}
 
-		log.Info("request body decoded")
+		log.Info("request body decoded", slog.Any("request", request))
 
 		id, err := saver.SaveCommand(request.Command)
 		if err != nil {
-			log.Error("error saving command", slogattr.Err(err))
+			log.Error("error saving command", slog.Any("request", request), slogattr.Err(err))
 
-			http.Error(w, "error saving command: "+err.Error(), http.StatusBadRequest)
+			if errors.Is(err, database.ErrCommandExists) {
+				http.Error(w, "command already exists", http.StatusConflict)
+			} else {
+				http.Error(w, "error saving command", http.StatusInternalServerError)
+			}
 
 			return
 		}
 
-		log.Info("new command saved")
+		log.Info("new command saved", slog.Int64("id", id), slog.String("command", request.Command))
 
 		response := Response{ID: id}
 		encoder := json.NewEncoder(w)
 		if err := encoder.Encode(response); err != nil {
-			log.Error("error encoding response", slogattr.Err(err))
+			log.Error("error encoding response", slogattr.Err(err), slog.Any("response", response))
 
-			http.Error(w, "error encoding response", http.StatusInternalServerError)
+			http.Error(w, "error writing response", http.StatusInternalServerError)
 
 			return
 		}
