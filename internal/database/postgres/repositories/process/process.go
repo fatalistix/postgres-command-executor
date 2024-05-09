@@ -2,7 +2,9 @@ package process
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
+	"github.com/fatalistix/postgres-command-executor/internal/database"
 	"github.com/fatalistix/postgres-command-executor/internal/database/postgres"
 	"github.com/fatalistix/postgres-command-executor/internal/domain/models"
 	"github.com/google/uuid"
@@ -94,6 +96,9 @@ func (r *Repository) Process(id uuid.UUID) (*models.Process, error) {
 	`, id).Scan(&processOutput, &processError, &processStatus, &exitCode)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("%s: %w", op, database.ErrProcessNotFound)
+		}
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
