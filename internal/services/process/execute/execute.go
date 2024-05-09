@@ -91,7 +91,7 @@ func (s *Service) StartCommandExecution(commandID int64) (uuid.UUID, error) {
 	stderrCh := make(chan readResult)
 	go readInLoop(stderr, stderrCh)
 
-	go s.listenStdoutAndStderr(processID, stdoutCh, stderrCh)
+	go s.listenStdoutAndStderr(processID, cmd, stdoutCh, stderrCh)
 
 	s.sm.Store(processID, &wrapper.CmdWrapper{
 		Cmd:    cmd,
@@ -102,7 +102,7 @@ func (s *Service) StartCommandExecution(commandID int64) (uuid.UUID, error) {
 	return processID, nil
 }
 
-func (s *Service) listenStdoutAndStderr(processID uuid.UUID, stdoutCh chan readResult, stderrCh chan readResult) {
+func (s *Service) listenStdoutAndStderr(processID uuid.UUID, cmd *exec.Cmd, stdoutCh chan readResult, stderrCh chan readResult) {
 	var stdoutErr error
 	var stderrErr error
 	for {
@@ -119,10 +119,16 @@ func (s *Service) listenStdoutAndStderr(processID uuid.UUID, stdoutCh chan readR
 			}
 		}
 		if stdoutErr != nil && stderrErr != nil {
-			if errors.Is(stdoutErr, io.EOF) && errors.Is(stderrErr, io.EOF) {
-				_ = s.processProvider.FinishProcess(processID, 0)
+			err := cmd.Wait()
+			if err != nil {
+				var exitError *exec.ExitError
+				if errors.As(err, &exitError) {
+					_ = s.processProvider.FinishProcess(processID, exitError.ExitCode())
+				} else {
+					_ = s.processProvider.FinishProcess(processID, 1)
+				}
 			} else {
-				_ = s.processProvider.FinishProcess(processID, 1)
+				_ = s.processProvider.FinishProcess(processID, 0)
 			}
 			s.sm.Delete(processID)
 			return
