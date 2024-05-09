@@ -66,16 +66,22 @@ func (s *Service) StartCommandExecution(commandID int64) (uuid.UUID, error) {
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
+		_ = s.processProvider.DeleteProcess(processID)
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
+		_ = stdout.Close()
+		_ = s.processProvider.DeleteProcess(processID)
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 
 	err = cmd.Start()
 	if err != nil {
+		_ = stderr.Close()
+		_ = stdout.Close()
+		_ = s.processProvider.DeleteProcess(processID)
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 
