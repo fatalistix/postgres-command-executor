@@ -4,13 +4,13 @@ import "sync"
 
 type SyncMap[K comparable, V any] struct {
 	m  map[K]V
-	mx sync.RWMutex
+	mx sync.Mutex
 }
 
 func NewSyncMap[K comparable, V any]() *SyncMap[K, V] {
 	return &SyncMap[K, V]{
 		m:  make(map[K]V),
-		mx: sync.RWMutex{},
+		mx: sync.Mutex{},
 	}
 }
 
@@ -21,8 +21,8 @@ func (s *SyncMap[K, V]) Store(key K, value V) {
 }
 
 func (s *SyncMap[K, V]) Load(key K) (V, bool) {
-	s.mx.RLock()
-	defer s.mx.RUnlock()
+	s.mx.Lock()
+	defer s.mx.Unlock()
 	value, ok := s.m[key]
 	return value, ok
 }
