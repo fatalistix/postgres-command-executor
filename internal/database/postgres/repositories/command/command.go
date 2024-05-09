@@ -28,13 +28,7 @@ func (cr *Repository) SaveCommand(command string) (int64, error) {
 		INSERT INTO command(command) VALUES ($1) RETURNING id;
 	`, command).Scan(&id)
 	if err != nil {
-		var pqErr *pq.Error
-		if errors.As(err, &pqErr) {
-			if pqErr.Code.Name() == "unique_violation" {
-				return 0, fmt.Errorf("%s: %w", op, database.ErrCommandExists)
-			}
-		}
-		return 0, fmt.Errorf("%s: %w", op, err)
+		return 0, handleError(op, err)
 	}
 
 	return id, nil
@@ -43,11 +37,11 @@ func (cr *Repository) SaveCommand(command string) (int64, error) {
 func (cr *Repository) DeleteCommand(id int64) error {
 	const op = "database.postgres.repositories.DeleteCommand"
 
-	_, err := cr.db.Exec(`
-		DELETE FROM command WHERE id = $1;
-	`, id)
+	err := cr.db.QueryRow(`
+		DELETE FROM command WHERE id = $1 RETURNING id;
+	`, id).Scan(&id)
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return handleError(op, err)
 	}
 
 	return nil
@@ -72,14 +66,14 @@ func (cr *Repository) Commands() ([]models.Command, error) {
 	for rows.Next() {
 		var command models.Command
 		if err := rows.Scan(&command.ID, &command.Command); err != nil {
-			return nil, fmt.Errorf("%s: %w", op, err)
+			return nil, handleError(op, err)
 		}
 
 		commands = append(commands, command)
 	}
 
 	if rows.Err() != nil {
-		return nil, fmt.Errorf("%s: %w", op, rows.Err())
+		return nil, handleError(op, rows.Err())
 	}
 
 	return commands, nil
@@ -94,11 +88,25 @@ func (cr *Repository) Command(id int64) (models.Command, error) {
 		SELECT id, command FROM command WHERE id = $1
 	`, id).Scan(&command.ID, &command.Command)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return models.Command{}, fmt.Errorf("%s: %w", op, database.ErrCommandNotFound)
-		}
-		return models.Command{}, fmt.Errorf("%s: %w", op, err)
+		return models.Command{}, handleError(op, err)
 	}
 
 	return command, nil
+}
+
+func handleError(message string, err error) error {
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("%s: %w", message, database.ErrCommandNotFound)
+		}
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			if pqErr.Code.Name() == "unique_violation" {
+				return fmt.Errorf("%s: %w", message, database.ErrCommandExists)
+			}
+		}
+		return fmt.Errorf("%s: %w", message, err)
+	}
+
+	return nil
 }
