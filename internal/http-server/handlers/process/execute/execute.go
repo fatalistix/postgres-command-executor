@@ -19,6 +19,7 @@ type Response struct {
 	ProcessID uuid.UUID `json:"process_id"`
 }
 
+//go:generate go run github.com/vektra/mockery/v2@v2.43.0 --name=CommandExecutionStarter
 type CommandExecutionStarter interface {
 	StartCommandExecution(id int64) (uuid.UUID, error)
 }
