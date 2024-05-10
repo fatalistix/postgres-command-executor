@@ -17,6 +17,7 @@ type Command struct {
 	Command string `json:"command"`
 }
 
+//go:generate go run github.com/vektra/mockery/v2@v2.43.0 --name=CommandProvider
 type CommandProvider interface {
 	Commands() ([]models.Command, error)
 }
