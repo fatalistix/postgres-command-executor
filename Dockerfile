@@ -14,7 +14,9 @@ COPY internal ./internal
 
 RUN make build
 
-COPY .env ./
+RUN touch .env
+RUN echo "CONFIG_PATH=config/prod.json" >> .env
+
 COPY config/prod.json ./config/
 
 # Run the tests in the container
@@ -22,7 +24,7 @@ FROM build-stage AS run-test-stage
 RUN make test
 
 # Deploy the application binary into a lean image
-FROM gcr.io/distroless/base-debian11 AS build-release-stage
+FROM archlinux:base-20240101.0.204074 AS build-release-stage
 
 WORKDIR /
 COPY --from=build-stage /postgres-command-executor /postgres-command-executor
@@ -30,7 +32,5 @@ COPY --from=build-stage /app/config /config
 COPY --from=build-stage /app/.env /
 
 EXPOSE 8089
-
-USER nonroot:nonroot
 
 ENTRYPOINT ["/postgres-command-executor"]
