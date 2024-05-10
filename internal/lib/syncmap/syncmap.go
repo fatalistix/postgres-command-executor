@@ -32,3 +32,9 @@ func (s *SyncMap[K, V]) Delete(key K) {
 	defer s.mx.Unlock()
 	delete(s.m, key)
 }
+
+func (s *SyncMap[K, V]) Size() int {
+	s.mx.Lock()
+	defer s.mx.Unlock()
+	return len(s.m)
+}
