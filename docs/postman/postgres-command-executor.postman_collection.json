@@ -1,0 +1,228 @@
+{
+	"info": {
+		"_postman_id": "fec1739d-8523-48fb-a4f9-9c6cf3d632e5",
+		"name": "postgres-command-executor",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28478411"
+	},
+	"item": [
+		{
+			"name": "command",
+			"item": [
+				{
+					"name": "Create command",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"command\": \"ls\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8089/commands",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8089",
+							"path": [
+								"commands"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete command",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8089/command/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8089",
+							"path": [
+								"command",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "5",
+									"uuid": "d5735464-9fae-4b61-a07c-17adbc2428f9"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get list of all commands",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8089/commands",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8089",
+							"path": [
+								"commands"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get command by id",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"uuid": "247adefc-d94c-4e45-92dc-92a83086856c",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8089/command/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8089",
+							"path": [
+								"command",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1000",
+									"uuid": "19f8ce71-43da-4018-bcec-6c42b276918d"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "process",
+			"item": [
+				{
+					"name": "Execute command",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"command_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8089/processes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8089",
+							"path": [
+								"processes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get process",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8089/process/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8089",
+							"path": [
+								"process",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "b7c11aeb-6af9-49cc-8f64-8a57df3ec2b3",
+									"uuid": "9f06727c-0432-4cc9-b751-868dc46b632f"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete process",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8089/process/:id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8089",
+							"path": [
+								"process",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "b7c11aeb-6af9-49cc-8f64-8a57df3ec2b3",
+									"uuid": "4be4df6f-34e2-4edb-a1fb-c2850d1beb38"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "id",
+			"value": "id"
+		}
+	]
+}
