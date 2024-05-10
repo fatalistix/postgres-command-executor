@@ -76,6 +76,7 @@ func MakeSaveHandlerFunc(log *slog.Logger, saver CommandSaver) http.HandlerFunc 
 
 		log.Info("new command saved", slog.Int64("id", id), slog.String("command", request.Command))
 
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 
 		response := Response{ID: id}
