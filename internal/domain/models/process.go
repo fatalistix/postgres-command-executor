@@ -5,9 +5,9 @@ import "github.com/google/uuid"
 type ProcessStatus string
 
 const (
-	Executing ProcessStatus = "executing"
-	Finished  ProcessStatus = "finished"
-	Error     ProcessStatus = "error"
+	StatusExecuting ProcessStatus = "executing"
+	StatusFinished  ProcessStatus = "finished"
+	StatusError     ProcessStatus = "error"
 )
 
 type Process struct {
