@@ -1,8 +1,11 @@
 package header
 
-import "net/http"
+import (
+	"net/http"
+	"strings"
+)
 
 func HasApplicationJson(r *http.Request) bool {
 	requestedHeader := r.Header.Get("Content-Type")
-	return requestedHeader == "application/json"
+	return strings.ToLower(requestedHeader) == "application/json"
 }
