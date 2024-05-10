@@ -41,5 +41,5 @@
 ## Дополнительно
 Для получения дополнительной информации о проекте можно посмотреть:
 
- - **[ADR](https://github.com/fatalistix/postgres-command-executor/docs/architecture/decisions)** - Architecture Decision Records - архитектурные решения в проекте с пояснениями
- - **[Схему запросов Postman](https://github.com/fatalistix/postgres-command-executor/docs/postman)**
+ - **[ADR](https://github.com/fatalistix/postgres-command-executor/tree/main/docs/architecture/decisions)** - Architecture Decision Records - архитектурные решения в проекте с пояснениями
+ - **[Схему запросов Postman](https://github.com/fatalistix/postgres-command-executor/tree/main/docs/postman)**
