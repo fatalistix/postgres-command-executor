@@ -97,15 +97,15 @@ func (cr *Repository) Command(id int64) (models.Command, error) {
 func handleError(message string, err error) error {
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("%s: %w", message, database.ErrCommandNotFound)
+			return fmt.Errorf("%s: %w", message, errors.Join(err, database.ErrCommandNotFound))
 		}
 		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
 			if pqErr.Code.Name() == "unique_violation" {
-				return fmt.Errorf("%s: %w", message, database.ErrCommandExists)
+				return fmt.Errorf("%s: %w", message, errors.Join(err, database.ErrCommandExists))
 			}
 		}
-		return fmt.Errorf("%s: %w", message, err)
+		return fmt.Errorf("%s: %w", message, errors.Join(err, database.ErrInternal))
 	}
 
 	return nil

@@ -101,11 +101,11 @@ func (r *Repository) Process(id uuid.UUID) (*models.Process, error) {
 	var status models.ProcessStatus
 	switch processStatus {
 	case "executing":
-		status = models.Executing
+		status = models.StatusExecuting
 	case "finished":
-		status = models.Finished
+		status = models.StatusFinished
 	case "error":
-		status = models.Error
+		status = models.StatusError
 	}
 
 	return &models.Process{
@@ -120,9 +120,9 @@ func (r *Repository) Process(id uuid.UUID) (*models.Process, error) {
 func handleError(message string, err error) error {
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("%s: %w", message, database.ErrProcessNotFound)
+			return fmt.Errorf("%s: %w", message, errors.Join(database.ErrProcessNotFound))
 		}
-		return fmt.Errorf("%s: %w", message, err)
+		return fmt.Errorf("%s: %w", message, errors.Join(err, database.ErrInternal))
 	}
 
 	return nil
