@@ -14,6 +14,7 @@
  - **Утилиты**:
    - *[migrate](https://github.com/golang-migrate/migrate)* - утилита создания файлов миграции и накатывания миграций на базу данных
    - *[mockery](https://github.com/vektra/mockery)* - утилита для создания mock объектов, необходимых для unit-тестирования
+   - *[adr-tools](https://github.com/npryce/adr-tools)* - утилита для быстрой разметки ADR (Architecture Decision Records)
  - **Docker** - приложение собирается в контейнер (об этом ниже), в качестве базы данных используется готовый docker-образ Postgres
  
 ## Функционал
