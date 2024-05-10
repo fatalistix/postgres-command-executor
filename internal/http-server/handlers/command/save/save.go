@@ -18,6 +18,7 @@ type Response struct {
 	ID int64 `json:"id"`
 }
 
+//go:generate go run github.com/vektra/mockery/v2@v2.43.0 --name=CommandSaver
 type CommandSaver interface {
 	SaveCommand(command string) (int64, error)
 }
@@ -52,6 +53,14 @@ func MakeSaveHandlerFunc(log *slog.Logger, saver CommandSaver) http.HandlerFunc 
 
 		log.Info("request body decoded", slog.Any("request", request))
 
+		if request.Command == "" {
+			log.Error("empty command")
+
+			http.Error(w, "empty command", http.StatusBadRequest)
+
+			return
+		}
+
 		id, err := saver.SaveCommand(request.Command)
 		if err != nil {
 			log.Error("error saving command", slog.Any("request", request), slogattr.Err(err))
@@ -66,6 +75,8 @@ func MakeSaveHandlerFunc(log *slog.Logger, saver CommandSaver) http.HandlerFunc 
 		}
 
 		log.Info("new command saved", slog.Int64("id", id), slog.String("command", request.Command))
+
+		w.WriteHeader(http.StatusCreated)
 
 		response := Response{ID: id}
 		encoder := json.NewEncoder(w)
