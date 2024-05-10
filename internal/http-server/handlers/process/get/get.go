@@ -19,6 +19,7 @@ type Response struct {
 	ExitCode int       `json:"exit_code"`
 }
 
+//go:generate go run github.com/vektra/mockery/v2@v2.43.0 --name=ProcessProvider
 type ProcessProvider interface {
 	Process(id uuid.UUID) (*models.Process, error)
 }
