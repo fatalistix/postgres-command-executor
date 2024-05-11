@@ -3,6 +3,7 @@
 
 # project setup
 BINARY_NAME=postgres-command-executor
+BINARY_DIR=./bin
 MAIN_PACKAGE_PATH=./cmd/postgres-command-executor/main.go
 MIGRATIONS_PATH=./migrations
 
