@@ -15,13 +15,11 @@ import (
 func main() {
 	log := setupLogger()
 
-	env.MustLoadEnv()
+	envVars := env.MustLoadEnv()
 
-	configPath := os.Getenv("CONFIG_PATH")
+	cfg := config.MustLoadConfig(envVars.ConfigPath)
 
-	cfg := config.MustLoadConfig(configPath)
-
-	application, err := app.NewApp(log, cfg)
+	application, err := app.NewApp(log, cfg, envVars)
 	if err != nil {
 		log.Error("failed to init application", slogattr.Err(err))
 		os.Exit(1)
