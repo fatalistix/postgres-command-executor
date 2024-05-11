@@ -4,13 +4,5 @@
     "timeout": 4000000000,
     "idle_timeout": 30000000000,
     "shutdown_timeout": 100000000000
-  },
-  "postgres": {
-    "host": "db",
-    "port": 5432,
-    "user": "command-executor-owner",
-    "password": "command-executor-owner",
-    "dbname": "command-executor",
-    "sslmode": "disable"
   }
 }
