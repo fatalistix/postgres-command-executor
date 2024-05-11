@@ -86,19 +86,24 @@ env-warning:
 docker/build:
 	docker build -t ${BINARY_NAME}:multistage .
 
-## docker/compose/db: run database container as a daemon
+## docker/compose/up/db: run database container as a daemon
 .PHONY: docker/compose/up/db
 docker/compose/up/db:
 	docker compose -f docker-compose.yml up db -d
 
-## docker/compose/app: run app container as a daemon
+## docker/compose/up/app: run app container as a daemon
 .PHONY: docker/compose/up/app
 docker/compose/up/app:
 	docker compose -f docker-compose.yml up app -d
 
+## docker/compose/up/migrate: run migrations (up) as a daemon
+.PHONY: docker/compose/up/migrate
+docker/compose/up/migrate:
+	docker compose -f docker-compose.yml up migrate -d
+
 ## docker/compose/up: run all containers as a daemons
 .PHONY: docker/compose/up
-docker/compose/up: docker/compose/up/db docker/compose/up/app
+docker/compose/up: docker/compose/up/db docker/compose/up/app docker/compose/up/migrate
 
 ## docker/container/stop/db: stop db containers
 .PHONY: docker/compose/stop/db
