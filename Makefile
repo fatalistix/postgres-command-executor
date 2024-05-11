@@ -70,8 +70,11 @@ migrate:
 
 ## env: set application environment variables
 .PHONY: env
-env:
+env: env-warning confirm
+	go run scripts/set_env.go
 
+env-warning:
+	@echo -n 'WARNING: This will overwrite the existing .env file. '
 
 # ==================================================================================== #
 # DOCKER
