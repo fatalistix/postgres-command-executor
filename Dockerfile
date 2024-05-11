@@ -14,8 +14,7 @@ COPY internal ./internal
 
 RUN make build
 
-RUN touch .env
-RUN echo "CONFIG_PATH=config/prod.json" >> .env
+COPY .env ./
 
 COPY config/prod.json ./config/
 
@@ -23,7 +22,7 @@ COPY config/prod.json ./config/
 FROM build-stage AS run-test-stage
 RUN make test
 
-# Deploy the application binary into a lean image
+# Deploy the application binary into a image
 FROM archlinux:base-20240101.0.204074 AS build-release-stage
 
 WORKDIR /
