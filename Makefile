@@ -65,8 +65,8 @@ run: build
 	/tmp/bin/${BINARY_NAME}
 
 ## migrate/up: run migrations (up)
-.PHONY: migrate
-migrate:
+.PHONY: migrate/up
+migrate/up:
 	go run -tags "postgres" github.com/golang-migrate/migrate/v4/cmd/migrate@v4.17.1 -source file://${MIGRATIONS_PATH} -database "postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=${POSTGRES_SSL_MODE}&user=${POSTGRES_USER}&password=${POSTGRES_PASSWORD}" up
 
 ## env: set application environment variables
