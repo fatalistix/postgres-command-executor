@@ -55,6 +55,8 @@
  - **[ADR](https://github.com/fatalistix/postgres-command-executor/tree/main/docs/architecture/decisions)** - Architecture Decision Records - архитектурные решения в проекте с пояснениями
  - **[Схему запросов Postman](https://github.com/fatalistix/postgres-command-executor/tree/main/docs/postman)**
 
+*P.S. ADR появилось так поздно только потому, что с утилитой для их разметки я познакомился только недавно, хотя наброски были уже давно*
+
 ## Известные проблемы
 Список проблем, которые можно исправить:
 
