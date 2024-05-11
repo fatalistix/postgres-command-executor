@@ -26,7 +26,7 @@ RUN make test
 FROM archlinux:base-20240101.0.204074 AS build-release-stage
 
 WORKDIR /
-COPY --from=build-stage /postgres-command-executor /postgres-command-executor
+COPY --from=build-stage /app/bin/postgres-command-executor /postgres-command-executor
 COPY --from=build-stage /app/config /config
 COPY --from=build-stage /app/.env /
 
