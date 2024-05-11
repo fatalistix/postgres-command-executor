@@ -85,7 +85,3 @@ env-warning:
 .PHONY: docker/build
 docker/build:
 	docker build -t ${BINARY_NAME}:multistage .
-
-## docker/migrate: run migrations
-.PHONY: docker/migrate
-docker/migrate:
