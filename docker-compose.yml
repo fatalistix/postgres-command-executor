@@ -18,3 +18,14 @@ services:
         required: true
     ports:
       - "5434:5432"
+
+  migrate:
+    image: migrate/migrate
+    container_name: postgres-command-executor-migrate
+    volumes:
+      - ./migrations:/migrations
+    command: ["-path", "/migrations", "-database", "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=${POSTGRES_SSL_MODE}", "up"]
+    links:
+      - db
+    depends_on:
+      - db
