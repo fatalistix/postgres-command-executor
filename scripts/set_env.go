@@ -19,7 +19,7 @@ func main() {
 		{
 			name:         "POSTGRES_HOST",
 			description:  "Postgres database host (local: localhost, docker: db)",
-			defaultValue: "localhost",
+			defaultValue: "db",
 		},
 		{
 			name:         "POSTGRES_PORT",
@@ -60,9 +60,13 @@ func main() {
 		var value string
 
 		fmt.Printf("Insert %s (default: %s): ", envVar.description, envVar.defaultValue)
-		_, err := fmt.Scan(&value)
+		_, err := fmt.Scanln(&value)
 		if err != nil {
-			panic(err)
+			if err.Error() != "unexpected newline" {
+				panic(err)
+			} else {
+				value = ""
+			}
 		}
 
 		if value == "" {
