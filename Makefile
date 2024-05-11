@@ -66,7 +66,7 @@ build:
 ## run: run the application
 .PHONY: run
 run: build
-	/tmp/bin/${BINARY_NAME}
+	${BINARY_DIR}/${BINARY_NAME}
 
 ## migrate/up: run migrations (up)
 .PHONY: migrate/up
