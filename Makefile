@@ -109,3 +109,7 @@ docker/container/stop/db:
 .PHONY: docker/compose/stop/app
 docker/container/stop/app:
 	docker compose -f docker-compose.yml stop app
+
+## docker/compose/stop: stop all containers
+.PHONY: docker/compose/stop
+docker/compose/stop: docker/container/stop/db docker/container/stop/app
