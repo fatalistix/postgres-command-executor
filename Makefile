@@ -10,6 +10,10 @@ MAIN_PACKAGE_PATH=./cmd/postgres-command-executor/main.go
 CGO_ENABLED=0
 GOOS=linux
 
+# load environment variables
+include .env
+export $(shell sed 's/=.*//' .env)
+
 # ==================================================================================== #
 # HELPERS
 # ==================================================================================== #
@@ -50,7 +54,7 @@ test/cover:
 	go tool cover -html=/tmp/coverage.out
 
 ## build: build the application
-.PHONY: run
+.PHONY: build
 build:
 	CGO_ENABLED=${CGO_ENABLED} go build -o ${BINARY_DIR}/${BINARY_NAME} ${MAIN_PACKAGE_PATH}
 
@@ -58,3 +62,26 @@ build:
 .PHONY: run
 run: build
 	/tmp/bin/${BINARY_NAME}
+
+## migrate/up: run migrations (up)
+.PHONY: migrate
+migrate:
+	migrate -path migrations -database postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable up
+
+## env: set application environment variables
+.PHONY: env
+env:
+
+
+# ==================================================================================== #
+# DOCKER
+# ==================================================================================== #
+
+## docker/build: build docker image
+.PHONY: docker/build
+docker/build:
+	docker build -t ${BINARY_NAME}:multistage .
+
+## docker/migrate: run migrations
+.PHONY: docker/migrate
+docker/migrate:
