@@ -11,6 +11,9 @@ MIGRATIONS_PATH=./migrations
 CGO_ENABLED=0
 GOOS=linux
 
+# create .env file if it doesn't exist
+$(shell touch .env)
+
 # load environment variables
 include .env
 export $(shell sed 's/=.*//' .env)
