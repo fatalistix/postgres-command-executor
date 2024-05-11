@@ -54,3 +54,13 @@
 
  - **[ADR](https://github.com/fatalistix/postgres-command-executor/tree/main/docs/architecture/decisions)** - Architecture Decision Records - архитектурные решения в проекте с пояснениями
  - **[Схему запросов Postman](https://github.com/fatalistix/postgres-command-executor/tree/main/docs/postman)**
+
+## Известные проблемы
+Список проблем, которые можно исправить:
+
+ - Полная свобода пользователя внутри контейнера (внутри контейнера пользователь может вводить любые команды, включая `rm /bin/bash`)
+
+## Возможные улучшения
+Список того, что можно добавить в проект, но не получилось по разным причинам:
+
+- Добавление swagger ui (была попытка с помощью [`swaggo/swag`](https://github.com/swaggo/swag), но он не смог найти файлы в корне проекта)
