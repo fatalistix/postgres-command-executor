@@ -1,0 +1,20 @@
+### CreateProcess
+### a request for creating process from a command (same as running a single command)
+// command_id - id of command to be runned (process image) - 64 bit integer
+@command_id = 2
+POST http://localhost:8089/processes
+Content-Type: application/json
+
+{ "command_id": {{command_id}} }
+
+### GetProcess
+### a request for getting info about a process: stdout, stderr, exit code, current status
+// id - UUID
+@get_process_id = 658176b0-d3da-41c7-a52a-bd1ef0997a96
+GET http://localhost:8089/process/{{get_process_id}}
+
+### DeleteProcess
+### a request for stopping process execution (if it is running) and deleting it's output
+// id - UUID
+@delete_process_id = 658176b0-d3da-41c7-a52a-bd1ef0997a96
+DELETE http://localhost:8089/process/{{delete_process_id}}

@@ -1,0 +1,23 @@
+### CreateCommand
+### a request for creating a new command
+POST http://localhost:8089/commands
+Content-Type: application/json
+
+// command - bash script to be saved
+{ "command": "echo \"hello, world!\""}
+
+### GetCommand
+### a request for getting a command by id
+// id - 64 bit integer
+@get_id = 1
+GET http://localhost:8089/command/{{get_id}}
+
+### ListCommands
+### a request for getting a list of all commands
+GET http://localhost:8089/commands
+
+### DeleteCommand
+### a request for deleting a command by id
+// id - 64 bit integer
+@delete_id = 1
+DELETE http://localhost:8089/command/{{delete_id}}
