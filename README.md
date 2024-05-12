@@ -55,6 +55,7 @@
 
  - **[ADR](https://github.com/fatalistix/postgres-command-executor/tree/main/docs/architecture/decisions)** - Architecture Decision Records - архитектурные решения в проекте с пояснениями
  - **[Схему запросов Postman](https://github.com/fatalistix/postgres-command-executor/tree/main/docs/postman)**
+ - **[.http файлы](https://github.com/fatalistix/postgres-command-executor/tree/main/docs/http)** - новый способ задания клиентских запросов от JetBrains
 
 *P.S. ADR появилось так поздно только потому, что с утилитой для их разметки я познакомился только недавно, хотя наброски были уже давно*
 
