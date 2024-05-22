@@ -35,11 +35,9 @@ func mustCreateCommand(t *testing.T, command string) save.Response {
 	body, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
 
-	sb := string(body)
-
 	var saveResp save.Response
 
-	err = json.Unmarshal([]byte(sb), &saveResp)
+	err = json.Unmarshal(body, &saveResp)
 	require.NoError(t, err)
 
 	return saveResp
