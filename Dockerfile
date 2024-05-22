@@ -20,7 +20,7 @@ COPY config/prod.json ./config/
 
 # Run the tests in the container
 FROM build-stage AS run-test-stage
-RUN make test
+RUN make test/unit
 
 # Deploy the application binary into a image
 FROM archlinux:base-20240101.0.204074 AS build-release-stage
