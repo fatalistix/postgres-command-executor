@@ -52,6 +52,16 @@ tidy:
 test:
 	go test -v -race -buildvcs ./...
 
+## test/unit: run unit tests
+.PHONY: test/unit
+test/unit:
+	go test -v -race -buildvcs ./internal/...
+
+## test/integration: run integration tests
+.PHONY: test/integration
+test/integration:
+	go test -v -race -buildvcs ./tests/...
+
 ## test/cover: run all tests and display coverage
 .PHONY: test/cover
 test/cover:
