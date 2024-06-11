@@ -9,16 +9,19 @@ import (
 	"github.com/google/uuid"
 	"io"
 	"os/exec"
+	"syscall"
 )
 
 const (
 	bufferSize = 1024
 )
 
+//go:generate go run github.com/vektra/mockery/v2@v2.43.0 --name=CommandProvider
 type CommandProvider interface {
 	Command(id int64) (models.Command, error)
 }
 
+//go:generate go run github.com/vektra/mockery/v2@v2.43.0 --name=ProcessProvider
 type ProcessProvider interface {
 	CreateProcess() (uuid.UUID, error)
 	AddOutput(processID uuid.UUID, output string, error string) error
@@ -63,6 +66,10 @@ func (s *Service) StartCommandExecution(commandID int64) (uuid.UUID, error) {
 	}
 
 	cmd := exec.Command("/bin/bash", "-c", command.Command)
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Pdeathsig: syscall.SIGTERM,
+		Setpgid:   true,
+	}
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
